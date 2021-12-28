@@ -1,43 +1,64 @@
-import React,{useState} from "react";
+import React,{useState,useRef} from "react";
 import { v4 } from "uuid";
 
-const Formulario = ({crearTarea}) => {
+const Formulario = ({crearTarea,update: {isUpdate,task}}) => {
+  
+  const inputRef = useRef(null);
 
   const [tarea, setTarea] = useState({
-    entrada:''
+    entrada: ''
   });
+  
+  const { entrada } = tarea;
+
+  React.useEffect(() => {
+    task.entrada && (inputRef.current.value = task.entrada)
+    task.entrada && (inputRef.current.focus())
+  }, [isUpdate,task.entrada])
 
   const [errorForm, setErrorForm ] = useState(false);
 
-  const { entrada } = tarea;
+  const handleChange = ({ target: { name,value }}) => {
+    if(isUpdate) {
+      task.entrada = value
+    }
 
-  const handleChange = e => {
     setTarea({
       ...tarea,
-      [e.target.name]:e.target.value
+      [name]:value
     })
   }
 
   // SubmitForm
   const submitTarea = e => {
-    
     e.preventDefault()
+    if(isUpdate){
+      if(task.entrada.trim() === '') {
+        setErrorForm(true);
+        return
+      }
 
-    //* Validar.
-    if(entrada.trim()===''){
+      //* Crear tarea.
+      crearTarea(task);
+      inputRef.current.value = '';
+    }
+
+     //* Validar.
+     if(entrada.trim()===''){
       setErrorForm(true);
       return
     }
-    
+
     //* Eliminar aviso.
     setErrorForm(false)
 
     //* Asignar id
     tarea.id = v4();
+    tarea.completado = false;
 
-    //todo Crear tarea.
-    // crearTarea(tarea)
+    //* Crear tarea.
     crearTarea(tarea);
+    inputRef.current.value = '';
 
     //* Reiniciar el form.
     setTarea({entrada:''})
@@ -47,7 +68,7 @@ const Formulario = ({crearTarea}) => {
     <div className="container my-5 mx-auto">
       {
         errorForm ?
-        <div class="alert alert-danger" role="alert">
+        <div className="alert alert-danger" role="alert">
           Tarea requerida!
         </div>
         : null
@@ -55,16 +76,15 @@ const Formulario = ({crearTarea}) => {
       <form className="" onSubmit={submitTarea}>
         <div className="input-group">
           <input
-          className="form-control" 
+            ref={inputRef}
+            className="form-control" 
             type="text" 
             name="entrada" 
             placeholder="Escribe tu tarea..." 
             onChange={handleChange}
-            value={entrada}
+            // defaultValue={entrada}
           />
-          <button type="submit" className="btn btn-outline-secondary align-self-end">
-            Agregar
-          </button>
+            <button type="submit" className={`btn btn-outline-${isUpdate ? 'danger' : 'secondary'} align-self-end`}>{isUpdate ? 'Actualizar' : 'Agregar'}</button>
         </div>
       </form>
     </div>
