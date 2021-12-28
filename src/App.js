@@ -1,27 +1,34 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import Formulario from "./components/Formulario";
 import Lista from "./components/Lista";
 
 const App = () => {
+
+  // Tareas en el localstorage:
+  let tareasIniciales = JSON.parse(localStorage.getItem('tareas'));
+  if(!tareasIniciales) tareasIniciales = [];
   
   // Arreglo de tareas.
-  const [tareas, setTareas] = useState([]);
+  const [tareas, setTareas] = useState(tareasIniciales);
+
+  // Use effect para realizar ciertas operaciones cuando el State cambie:
+  useEffect(()=>{
+    if(tareasIniciales){
+      localStorage.setItem('tareas',JSON.stringify(tareas));
+    } else {
+      localStorage.setItem('tareas',JSON.stringify([]));
+    }
+  },[tareas,tareasIniciales])
 
   // Titulo condicional.
   const titulo = tareas.length === 0 ? '🎉 Hurra! No hay tareas pendientes! 🥳': 'Lista de pendientes:'
 
+  // Crear tarea.
   const crearTarea = tarea => {
     setTareas([...tareas,tarea])
   }
-  /**
-   * 
-   * 
-   
-  const completeTask = id => {
-    const completeTask = tareas.filter(tarea => tarea.id ===id);
-    completeTask.map(task=> {})
-  }
-*/
+
+  // Eliminar tarea.
   const eliminarTarea = id => {
     const nuevasTareas = tareas.filter(tarea => tarea.id!==id);
     setTareas(nuevasTareas)
